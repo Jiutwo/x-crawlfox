@@ -1,0 +1,25 @@
+[project]
+name = "x-crawlfox"
+version = "0.1.0"
+description = "Implementing X (Twitter) data crawling based on Camoufox, for personal use."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "camoufox>=0.4.11",
+    "typer>=0.15.1",
+    "loguru>=0.7.3",
+    "pydantic>=2.10.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+x-crawlfox = "x_crawlfox.cli.main:app"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

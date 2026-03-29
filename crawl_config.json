@@ -1,0 +1,37 @@
+{
+    "timeline": [
+        {
+            "type": "Following",
+            "max_scrolls": 3,
+            "max_items": 10
+        },
+        {
+            "type": "For you",
+            "max_scrolls": 2,
+            "max_items": 10
+        }
+    ],
+    "news": {
+        "enabled": true,
+        "detail": true,
+        "max_items": 5
+    },
+    "monitor": [
+        {
+            "username": "elonmusk",
+            "only_new": true,
+            "max_tweets": 10
+        },
+        {
+            "username": "OpenAI",
+            "only_new": true,
+            "max_tweets": 5
+        }
+    ],
+    "search": [
+        {
+            "keyword": "AI",
+            "max_items": 10
+        }
+    ]
+}
