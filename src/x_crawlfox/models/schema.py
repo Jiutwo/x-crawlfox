@@ -29,7 +29,7 @@ class AuthorInfo(BaseModel):
 
 class CrawledItem(BaseModel):
     id: str
-    platform: str = "twitter"
+    platform: str = "x"
     url: Optional[str] = None   # 链接
     title: Optional[str] = None # 标题
     content: str                # 详细内容

@@ -23,13 +23,17 @@ class NewsScraper(BaseScraper):
         results = []
 
         try:
+            # Scroll back to top so the sticky sidebar news items are in the viewport
+            self.page.evaluate("window.scrollTo(0, 0)")
+            self.page.wait_for_timeout(800)
+
             # 1. Wait for news sidebar to load
             self.page.wait_for_selector('[data-testid="news_sidebar"]', timeout=15000)
-            
+
             # 2. Get sidebar items
             news_locators = self.page.locator('[data-testid^="news_sidebar_article_"]').all()
             logger.info(f"Found {len(news_locators)} news items in sidebar.")
-            
+
             # Limit items to process
             news_locators = news_locators[:max_items]
 
@@ -38,19 +42,22 @@ class NewsScraper(BaseScraper):
                 current_items = self.page.locator('[data-testid^="news_sidebar_article_"]').all()
                 if i >= len(current_items):
                     break
-                
+
                 article = current_items[i]
                 item = self._extract_news_article_data(article)
                 if not item:
                     continue
-                
+
                 if not include_details:
                     item.source = "today_news_sidebar"
                     results.append(item)
                     continue
-                
+
                 # 3. Deep Scrape: Click into the news item
                 try:
+                    # Scroll back to top before each click so the sidebar stays in viewport
+                    self.page.evaluate("window.scrollTo(0, 0)")
+                    self.page.wait_for_timeout(500)
                     logger.info(f"Clicking into news: {item.title[:30]}...")
                     article.click()
                     self.page.wait_for_timeout(random.randint(3000, 5000))
@@ -79,9 +86,10 @@ class NewsScraper(BaseScraper):
                         tweet.source = f"news_related:{item.id}"
                         results.append(tweet)
                     
-                    # 5. Go back to main news page
+                    # 5. Go back to main news page and reset scroll position
                     self.page.go_back()
                     self.page.wait_for_selector('[data-testid="news_sidebar"]', timeout=15000)
+                    self.page.evaluate("window.scrollTo(0, 0)")
                     self.page.wait_for_timeout(random.randint(1000, 2000))
                     
                 except Exception as e:

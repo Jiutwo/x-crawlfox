@@ -127,7 +127,7 @@ class SearchScraper(BaseScraper):
 
             return CrawledItem(
                 id=tweet_path.split('/')[-1] if tweet_path else f"unknown_{random.randint(1000,9999)}",
-                platform="twitter",
+                platform="x",
                 url=f"https://x.com{tweet_path}" if tweet_path else "",
                 content=content,
                 author=AuthorInfo(

@@ -4,11 +4,11 @@ from typing import Dict, Any, Optional
 from loguru import logger
 from datetime import datetime
 
-from .paths import get_state_path
+from ..cli.config import config_manager
 
 class StateManager:
     def __init__(self, state_file: Optional[str] = None):
-        self.state_file = Path(state_file) if state_file else get_state_path()
+        self.state_file = Path(state_file) if state_file else config_manager.get_x_crawl_state_path()
         self.state: Dict[str, Any] = self._load_state()
 
     def _load_state(self) -> Dict[str, Any]:

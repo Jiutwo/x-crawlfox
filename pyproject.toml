@@ -18,7 +18,7 @@ dev = [
 ]
 
 [project.scripts]
-x-crawlfox = "x_crawlfox.cli.main:app"
+x-crawlfox = "x_crawlfox.cli.main:cli"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

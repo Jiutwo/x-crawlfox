@@ -7,14 +7,13 @@ from loguru import logger
 
 from .base_scraper import BaseScraper
 from ..utils.auth import ensure_storage_state
-from ..utils.paths import get_auth_path
 
 class BrowserManager:
     def __init__(self, 
                  auth_file: Optional[str] = None,
                  headless: bool = True,
                  proxy: Optional[str] = None):
-        self.auth_file = Path(auth_file) if auth_file else get_auth_path()
+        self.auth_file = Path(auth_file) if auth_file else None
         self.headless = headless
         self.proxy = proxy
         self.browser: Optional[Camoufox] = None
@@ -30,7 +29,7 @@ class BrowserManager:
         
         # Load storage state if it exists
         storage_state = None
-        if self.auth_file.exists():
+        if self.auth_file and self.auth_file.exists():
             # 自动识别并转换格式
             ensure_storage_state(self.auth_file)
             logger.info(f"Loading auth state from {self.auth_file}")

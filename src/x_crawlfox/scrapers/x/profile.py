@@ -149,7 +149,7 @@ class ProfileScraper(TimelineScraper):
         all_items = []
         context = self.page.context
         
-        for config in users_config:
+        for idx, config in enumerate(users_config):
             username = config.get("username")
             if not username: continue
             
@@ -172,8 +172,8 @@ class ProfileScraper(TimelineScraper):
                 logger.error(f"监控 @{username} 时发生严重错误: {e}")
             
             # Anti-risk: delay between users
-            if len(users_config) > 1:
-                delay = random.uniform(10, 20)
+            if len(users_config) > 1 and idx != len(users_config) - 1:
+                delay = random.uniform(5, 15)
                 logger.info(f"Waiting {delay:.1f}s before next profile...")
                 
                 # 防内存泄漏与防追踪：跳回到空白页，释放上一个账号加载的资源

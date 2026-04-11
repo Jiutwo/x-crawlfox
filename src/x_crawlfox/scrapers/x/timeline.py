@@ -46,8 +46,7 @@ class TimelineScraper(BaseScraper):
             try:
                 self.page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
                 tweets = self.page.locator('article[data-testid="tweet"]').all()
-
-                logger.info(f"[{tab_name}] Found {len(tweets)} tweets in current view (Scroll {scroll_count + 1}/{self.max_scrolls}, Total Collected: {len(items)})")
+                collected_before = len(items)
 
                 for tweet in tweets:
                     if len(items) >= max_items:
@@ -61,6 +60,8 @@ class TimelineScraper(BaseScraper):
                     except Exception as e:
                         logger.debug(f"Error extracting tweet: {e}")
                         continue
+
+                logger.info(f"[{tab_name}] Scroll {scroll_count + 1}/{self.max_scrolls}: {len(tweets)} in view, +{len(items) - collected_before} new, total collected: {len(items)}")
 
                 if len(items) >= max_items:
                     break
