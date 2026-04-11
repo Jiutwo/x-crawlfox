@@ -10,3 +10,4 @@ wheels/
 output/
 # Virtual environments
 .venv
+.worktrees/
