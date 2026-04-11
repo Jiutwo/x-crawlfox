@@ -19,43 +19,43 @@ class SearchScraper(BaseScraper):
         logger.info(f"Simulating input search via Camoufox: {keyword}")
         
         try:
-            # 1. 导航到探索页（通常搜索框最明显的地方）
+            # 1. Navigate to explore page (where search box is usually most prominent)
             self.page.goto("https://x.com/explore", wait_until="domcontentloaded")
             self.page.wait_for_timeout(random.randint(2000, 4000))
             
-            # 2. 查找搜索框并模拟输入
-            # X 的搜索框通常带有 data-testid="SearchBox_Search_Input"
+            # 2. Find search box and simulate input
+            # X\'s search box usually has data-testid="SearchBox_Search_Input"
             search_input = self.page.locator('[data-testid="SearchBox_Search_Input"]')
             
-            # 如果在探索页没找到，可能在首页侧边栏
+            # If not found on explore page, it might be in the home sidebar
             if not search_input.is_visible():
                 search_input = self.page.get_by_placeholder("Search", exact=False)
             
             if search_input.is_visible():
                 search_input.click()
-                # 拟人化输入
+                # Humanized input
                 self.page.keyboard.type(keyword, delay=random.randint(50, 150))
                 self.page.wait_for_timeout(500)
                 self.page.keyboard.press("Enter")
                 logger.info("Simulated input and pressed Enter...")
             else:
-                # 兜底：如果实在找不到框，回退到直链，但这种情况很少见
+                # Fallback: If search box really cannot be found, fallback to direct link, but this is rare
                 logger.warning("Search box not found, falling back to direct link...")
                 self.page.goto(f"https://x.com/search?q={keyword}&src=typed_query&f=live")
 
-            # 3. 等待结果加载并切换到 "Latest" (最新) 标签以获取实时内容
+            # 3. Wait for results to load and switch to "Latest" tab for real-time content
             self.page.wait_for_timeout(3000)
             latest_tab = self.page.get_by_role("link", name="Latest")
             if latest_tab.is_visible():
                 latest_tab.click()
                 self.page.wait_for_timeout(2000)
 
-            # 等待第一条推文加载完毕
+            # Wait for the first tweet to finish loading
             self.page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
             
         except Exception as e:
             logger.error(f"Failed to simulate search interaction: {e}")
-            # 最后的尝试：直接跳转
+            # Final attempt: direct navigation
             self.page.goto(f"https://x.com/search?q={keyword}&f=live")
             self.page.wait_for_timeout(5000)
 
@@ -68,7 +68,7 @@ class SearchScraper(BaseScraper):
                     logger.error("Search page persistently abnormal and unrecoverable, stopping current keyword crawl.")
                     break
                 
-                # 如果恢复成功，重试一轮
+                # If recovery is successful, retry one round
                 self.page.mouse.wheel(0, 500)
                 self.page.wait_for_timeout(2000)
                 scroll_count += 1
@@ -87,7 +87,7 @@ class SearchScraper(BaseScraper):
                     self.scraped_ids.add(item.id)
                     logger.info(f"Scraped: [{item.author.username}] {item.content[:20]}...")
 
-            # 拟人化滚动
+            # Humanized scrolling
             distance = random.randint(700, 1200)
             self.page.mouse.wheel(0, distance)
             self.page.wait_for_timeout(random.randint(2000, 4000))
@@ -97,7 +97,7 @@ class SearchScraper(BaseScraper):
 
     def _parse_tweet(self, tweet_locator) -> CrawledItem:
         try:
-            # 1. 解析用户信息
+            # 1. Parse user info
             user_name_elem = tweet_locator.locator('[data-testid="User-Name"]')
             full_user_text = user_name_elem.inner_text()
             
@@ -105,15 +105,15 @@ class SearchScraper(BaseScraper):
             nickname = parts[0] if parts else ""
             username = next((p for p in parts if p.startswith('@')), "")
             
-            # 2. 解析正文
+            # 2. Parse main content
             content_elem = tweet_locator.locator('[data-testid="tweetText"]')
             content = content_elem.inner_text() if content_elem.count() > 0 else ""
             
-            # 3. 解析时间
+            # 3. Parse time
             time_elem = tweet_locator.locator('time')
             dt_str = time_elem.get_attribute('datetime') if time_elem.count() > 0 else None
             
-            # 4. 获取推文 ID
+            # 4. Get tweet ID
             url_elems = tweet_locator.locator("a[href*='/status/']").all()
             tweet_path = ""
             for url_elem in url_elems:
@@ -122,7 +122,7 @@ class SearchScraper(BaseScraper):
                     tweet_path = href
                     break
 
-            # 5. 获取互动统计
+            # 5. Get interaction stats
             metrics = self._get_metrics(tweet_locator)
 
             return CrawledItem(
@@ -152,7 +152,7 @@ class SearchScraper(BaseScraper):
     def _get_metrics(self, tweet_locator):
         metrics = {"reply": "0", "retweet": "0", "like": "0", "views": "0"}
         
-        # 尝试通过 aria-label 解析（通常最准）
+        # Attempt parsing via aria-label (usually most accurate)
         group_elem = tweet_locator.locator('[role="group"]').first
         if group_elem.count() > 0 and group_elem.is_visible():
             aria_label = group_elem.get_attribute('aria-label')
@@ -169,7 +169,7 @@ class SearchScraper(BaseScraper):
                 
                 return metrics
 
-        # 备选方案：通过 testid 查找
+        # Alternative: find via testid
         for action in ["reply", "retweet", "like"]:
             elem = tweet_locator.locator(f'[data-testid="{action}"]')
             if elem.count() > 0:

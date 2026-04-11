@@ -3,28 +3,28 @@ from pathlib import Path
 
 class ConfigManager:
     def __init__(self):
-        """管理配置文件夹路径"""
+        """Manage configuration folder paths"""
         self.local_dir = Path.cwd() / ".x-crawlfox"
         self.global_dir = Path.home() / ".x-crawlfox"
         
         self.config_dir = self.get_config_dir()
         
-        # 定义校验文件路径
+        # Define validation file paths
         self.auth_path = self.config_dir / "x_cookies.json"
         
     def ensure_dirs(self):
-        """自动创建所需的所有目录，用户无需手动新建"""
+        """Automatically create all required directories, user does not need to manually create them"""
         self.config_dir.mkdir(parents=True, exist_ok=True)
         
     def get_config_dir(self):
-        """如果.x-crawlfox位于当前目录下，则返回当前目录路径；否则返回用户目录路径"""
+        """Return current directory path if .x-crawlfox is in current directory; otherwise return user directory path"""
         if self.local_dir.exists():
             return self.local_dir
         else:
             return self.global_dir
         
     def get_crawl_config_path(self):
-        """获取爬取配置文件路径"""
+        """Get crawl config file path"""
         config_dir = self.get_config_dir()
         return Path(config_dir) / "crawl_config.json"
     

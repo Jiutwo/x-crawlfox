@@ -18,7 +18,7 @@ class BaseScraper(ABC):
         pass
 
     def _check_and_retry_error(self, retry_count: int = 2) -> bool:
-        """检测并尝试修复页面错误（如风控拦截）"""
+        """Detect and attempt to fix page errors (e.g. risk control blocks)"""
         if self.page.is_closed():
             logger.error("Browser page is closed, cannot retry.")
             return False

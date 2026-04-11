@@ -86,7 +86,7 @@ def news(
     proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
-    爬取侧边栏的今日新闻 (Today's News)，支持深度爬取详情和帖子。
+    Scrape sidebar today's news, supports deep scraping of details and posts.
     """
     cfg: ConfigManager = ctx.obj["config"]
     try:
@@ -114,7 +114,7 @@ def user(
     proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
-    爬取指定用户主页的推文，支持增量爬取。
+    Scrape tweets from a specified user's profile, supports incremental scraping.
     """
     cfg: ConfigManager = ctx.obj["config"]
 
@@ -140,14 +140,14 @@ def monitor(
     proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
-    监控多个账号的新推文。
-    未指定 --config 时从 .x-crawlfox/crawl_config.json 的 x.monitor 段读取账号列表。
-    指定 --config 时读取 flat list 格式: [{"username": "...", "only_new": true, ...}]
+    Monitor new tweets for multiple accounts.
+    If --config is not specified, reads account list from x.monitor section in .x-crawlfox/crawl_config.json.
+    If --config is specified, reads flat list format: [{"username": "...", "only_new": true, ...}]
     """
     cfg: ConfigManager = ctx.obj["config"]
 
     if config is None:
-        # 从统一的 crawl_config.json 中读取 x.monitor 段
+        # Read x.monitor section from the unified crawl_config.json
         config_path = cfg.get_crawl_config_path()
         if not config_path.exists():
             logger.error(f"Config file not found: {config_path}，请先运行 'x-crawlfox init' 或通过 --config 指定配置文件。")
@@ -163,7 +163,7 @@ def monitor(
             logger.error("x.monitor config not found in crawl_config.json. Please add it and try again.")
             return
     else:
-        # 显式指定配置文件：读取 flat list 格式
+        # Explicit config file specified: read flat list format
         config_path = Path(config)
         if not config_path.exists():
             logger.error(f"Config file not found: {config}")
@@ -222,8 +222,8 @@ def all(
     proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
-    [一键爬取] 根据配置文件执行全量爬取任务。
-    如果指定了config则以config路径优先，否则从.x-crawlfox目录下加载
+    [One-click Crawl] Execute full crawl task based on config file.
+    If config is specified, it takes priority, otherwise loads from .x-crawlfox directory
     """
     config_manager: ConfigManager = ctx.obj["config"]
     if config is None:
@@ -242,7 +242,7 @@ def all(
         logger.error(f"Failed to parse config file: {e}")
         return
 
-    # 读取 global 段，CLI 显式传值 > global 配置 > 代码默认值
+    # Read global section, CLI explicit value > global config > code default
     global_config = full_config.get("global", {})
     effective_headless = headless if headless is not None else global_config.get("headless", True)
     effective_output   = output   if output   is not None else global_config.get("output_dir", "output")
@@ -372,7 +372,7 @@ app.add_typer(x_app, name="x")
 @app.callback()
 def main(ctx: typer.Context):
     """x-crawlfox global initialization"""
-    # 将配置实例绑定到上下文对象中
+    # Bind config instance to context object
     ctx.ensure_object(dict)
     ctx.obj["config"] = config_manager
 

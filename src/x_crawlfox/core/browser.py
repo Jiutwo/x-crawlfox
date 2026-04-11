@@ -30,7 +30,7 @@ class BrowserManager:
         # Load storage state if it exists
         storage_state = None
         if self.auth_file and self.auth_file.exists():
-            # 自动识别并转换格式
+            # Auto-detect and convert format
             ensure_storage_state(self.auth_file)
             logger.info(f"Loading auth state from {self.auth_file}")
             storage_state = str(self.auth_file)

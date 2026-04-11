@@ -5,18 +5,18 @@ from typing import List, Dict, Any, Union
 
 def is_cookie_editor_format(data: Union[List, Dict]) -> bool:
     """
-    识别是否为 Cookie-Editor 导出的 JSON 格式。
-    特征：是一个列表，且元素包含 'expirationDate' 字段。
+    Identify if the JSON format is exported from Cookie-Editor.
+    Characteristics: It is a list, and elements contain an 'expirationDate' field.
     """
     if isinstance(data, list) and len(data) > 0:
-        # 检查第一个元素是否有 Cookie-Editor 特有的字段
+        # Check if the first element has Cookie-Editor specific fields
         first = data[0]
         return isinstance(first, dict) and "expirationDate" in first
     return False
 
 def convert_to_playwright_format(cookies_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    将 Cookie-Editor 格式转换为 Playwright (Storage State) 格式。
+    Convert Cookie-Editor format to Playwright (Storage State) format.
     """
     new_cookies = []
     for c in cookies_list:
@@ -29,11 +29,11 @@ def convert_to_playwright_format(cookies_list: List[Dict[str, Any]]) -> Dict[str
             "secure": c.get("secure", False),
         }
         
-        # 字段映射: expirationDate -> expires
+        # Field mapping: expirationDate -> expires
         if "expirationDate" in c:
             cookie["expires"] = c["expirationDate"]
             
-        # SameSite 映射
+        # SameSite mapping
         same_site = str(c.get("sameSite", "Lax")).lower()
         if same_site == "no_restriction":
             cookie["sameSite"] = "None"
@@ -51,7 +51,7 @@ def convert_to_playwright_format(cookies_list: List[Dict[str, Any]]) -> Dict[str
 
 def ensure_storage_state(file_path: Path) -> Path:
     """
-    确保文件是 Playwright 格式。如果是 Cookie-Editor 格式，则自动转换并覆盖。
+    Ensure the file is in Playwright format. If it is Cookie-Editor format, convert and overwrite automatically.
     """
     if not file_path.exists():
         return file_path
@@ -64,12 +64,12 @@ def ensure_storage_state(file_path: Path) -> Path:
             logger.info(f"Detected {file_path.name} in Cookie-Editor format, converting automatically...")
             converted_data = convert_to_playwright_format(data)
             
-            # 自动备份并覆盖
+            # Automatically backup and overwrite
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(converted_data, f, indent=4)
             logger.success(f"Conversion successful! Updated {file_path}")
         elif isinstance(data, dict) and "cookies" in data:
-            # 已经是 Playwright 格式
+            # Already in Playwright format
             pass
         else:
             logger.warning(f"Unknown format for file {file_path.name}, which may cause browser loading failure.")

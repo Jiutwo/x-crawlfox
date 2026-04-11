@@ -33,7 +33,7 @@ class ProfileScraper(TimelineScraper):
             logger.info(f"Targeting new tweets since last ID: {last_tweet_id}")
 
         try:
-            # 增加重试逻辑的 goto
+            # Add retry logic for goto
             success = False
             for attempt in range(2):
                 try:
@@ -41,7 +41,7 @@ class ProfileScraper(TimelineScraper):
                     success = True
                     break
                 except Exception as e:
-                    if "closed" in str(e).lower(): raise e # 页面关闭直接抛出，由 monitor 层处理
+                    if "closed" in str(e).lower(): raise e # If page is closed, raise directly, handled by monitor layer
                     logger.warning(f"Failed to navigate to @{username} (attempt {attempt+1}): {e}")
                     self.page.wait_for_timeout(5000)
             
@@ -153,7 +153,7 @@ class ProfileScraper(TimelineScraper):
             username = config.get("username")
             if not username: continue
             
-            # 如果当前页面已关闭，尝试开个新页面继续
+            # If current page is closed, try to open a new page to continue
             if self.page.is_closed():
                 logger.warning("Browser page closed, attempting to open a new page for the next account...")
                 try:
@@ -176,7 +176,7 @@ class ProfileScraper(TimelineScraper):
                 delay = random.uniform(5, 15)
                 logger.info(f"Waiting {delay:.1f}s before next profile...")
                 
-                # 防内存泄漏与防追踪：跳回到空白页，释放上一个账号加载的资源
+                # Anti-memory leak and anti-tracking: jump back to about:blank to release resources loaded by previous account
                 try:
                     if not self.page.is_closed():
                         self.page.goto("about:blank")

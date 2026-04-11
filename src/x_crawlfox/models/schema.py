@@ -30,10 +30,10 @@ class AuthorInfo(BaseModel):
 class CrawledItem(BaseModel):
     id: str
     platform: str = "x"
-    url: Optional[str] = None   # 链接
-    title: Optional[str] = None # 标题
-    content: str                # 详细内容
-    description: Optional[str] = None # 概要描述
+    url: Optional[str] = None   # Link
+    title: Optional[str] = None # Title
+    content: str                # Detailed content
+    description: Optional[str] = None # Summary description
     author: AuthorInfo
     media: List[MediaResource] = []
     stats: DataStats
@@ -47,5 +47,5 @@ class CrawledItem(BaseModel):
     def serialize_dt(self, dt: datetime, _info):
         if dt is None:
             return None
-        # 强制转换为 UTC，去除微秒，并以 Z 结尾
+        # Force conversion to UTC, remove microseconds, and append Z
         return dt.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
