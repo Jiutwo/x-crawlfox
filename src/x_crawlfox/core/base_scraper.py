@@ -20,7 +20,7 @@ class BaseScraper(ABC):
     def _check_and_retry_error(self, retry_count: int = 2) -> bool:
         """检测并尝试修复页面错误（如风控拦截）"""
         if self.page.is_closed():
-            logger.error("浏览器页面已关闭，无法重试。")
+            logger.error("Browser page is closed, cannot retry.")
             return False
 
         for i in range(retry_count):
@@ -29,7 +29,7 @@ class BaseScraper(ABC):
                 error_text = self.page.locator('text="Something went wrong"')
 
                 if error_text.is_visible() or retry_button.is_visible():
-                    logger.warning(f"检测到 X 页面异常 (风控/限流)，第 {i+1} 次尝试恢复...")
+                    logger.warning(f"X page abnormality detected (rate limit/risk control), recovery attempt {i+1}...")
                     if retry_button.is_visible():
                         retry_button.click()
                     else:
@@ -40,15 +40,15 @@ class BaseScraper(ABC):
 
                     # Check if fixed
                     if self.page.locator('article[data-testid="tweet"]').first.is_visible():
-                        logger.success("页面恢复正常。")
+                        logger.success("Page recovered successfully.")
                         return True
                 else:
                     if "login" in self.page.url:
-                        logger.error("检测到会话失效，强制要求登录。")
+                        logger.error("Session expiration detected, login is forced.")
                         return False
                     return True
             except Exception as e:
-                logger.debug(f"检查页面错误时发生异常 (可能页面已关闭): {e}")
+                logger.debug(f"Exception occurred while checking for page errors (page might be closed): {e}")
                 return False
         return False
 

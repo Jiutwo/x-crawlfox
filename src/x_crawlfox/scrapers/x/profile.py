@@ -21,7 +21,7 @@ class ProfileScraper(TimelineScraper):
         Scrape tweets from a specific user's profile with advanced controls.
         """
         if self.page.is_closed():
-            logger.error(f"无法为 @{username} 执行爬取：页面已关闭。")
+            logger.error(f"Cannot scrape @{username}: Page is closed.")
             return []
 
         username = username.lstrip('@')
@@ -42,7 +42,7 @@ class ProfileScraper(TimelineScraper):
                     break
                 except Exception as e:
                     if "closed" in str(e).lower(): raise e # 页面关闭直接抛出，由 monitor 层处理
-                    logger.warning(f"导航至 @{username} 失败 (第 {attempt+1} 次): {e}")
+                    logger.warning(f"Failed to navigate to @{username} (attempt {attempt+1}): {e}")
                     self.page.wait_for_timeout(5000)
             
             if not success: return []
@@ -155,11 +155,11 @@ class ProfileScraper(TimelineScraper):
             
             # 如果当前页面已关闭，尝试开个新页面继续
             if self.page.is_closed():
-                logger.warning("检测到浏览器页面已关闭，正在尝试为下一个账号开启新页面...")
+                logger.warning("Browser page closed, attempting to open a new page for the next account...")
                 try:
                     self.page = context.new_page()
                 except Exception as e:
-                    logger.error(f"无法开启新页面: {e}")
+                    logger.error(f"Failed to open new page: {e}")
                     break
 
             only_new = config.get("only_new", True)
@@ -169,7 +169,7 @@ class ProfileScraper(TimelineScraper):
                 items = self.scrape_user(username, only_new=only_new, max_tweets=max_tweets)
                 all_items.extend(items)
             except Exception as e:
-                logger.error(f"监控 @{username} 时发生严重错误: {e}")
+                logger.error(f"Critical error while monitoring @{username}: {e}")
             
             # Anti-risk: delay between users
             if len(users_config) > 1 and idx != len(users_config) - 1:

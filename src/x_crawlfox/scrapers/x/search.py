@@ -16,7 +16,7 @@ class SearchScraper(BaseScraper):
         self.scraped_ids = set()
 
     def scrape(self, keyword: str) -> List[CrawledItem]:
-        logger.info(f"正在通过 Camoufox 模拟输入搜索: {keyword}")
+        logger.info(f"Simulating input search via Camoufox: {keyword}")
         
         try:
             # 1. 导航到探索页（通常搜索框最明显的地方）
@@ -37,10 +37,10 @@ class SearchScraper(BaseScraper):
                 self.page.keyboard.type(keyword, delay=random.randint(50, 150))
                 self.page.wait_for_timeout(500)
                 self.page.keyboard.press("Enter")
-                logger.info("已模拟输入并按下回车...")
+                logger.info("Simulated input and pressed Enter...")
             else:
                 # 兜底：如果实在找不到框，回退到直链，但这种情况很少见
-                logger.warning("未能找到搜索框，回退到直链跳转...")
+                logger.warning("Search box not found, falling back to direct link...")
                 self.page.goto(f"https://x.com/search?q={keyword}&src=typed_query&f=live")
 
             # 3. 等待结果加载并切换到 "Latest" (最新) 标签以获取实时内容
@@ -54,7 +54,7 @@ class SearchScraper(BaseScraper):
             self.page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
             
         except Exception as e:
-            logger.error(f"模拟搜索交互失败: {e}")
+            logger.error(f"Failed to simulate search interaction: {e}")
             # 最后的尝试：直接跳转
             self.page.goto(f"https://x.com/search?q={keyword}&f=live")
             self.page.wait_for_timeout(5000)
@@ -65,7 +65,7 @@ class SearchScraper(BaseScraper):
             
             if not tweets:
                 if not self._check_and_retry_error():
-                    logger.error("搜索页面持续异常且无法恢复，停止当前关键词爬取。")
+                    logger.error("Search page persistently abnormal and unrecoverable, stopping current keyword crawl.")
                     break
                 
                 # 如果恢复成功，重试一轮
@@ -85,7 +85,7 @@ class SearchScraper(BaseScraper):
                 if item and item.id not in self.scraped_ids:
                     self.items.append(item)
                     self.scraped_ids.add(item.id)
-                    logger.info(f"已抓取: [{item.author.username}] {item.content[:20]}...")
+                    logger.info(f"Scraped: [{item.author.username}] {item.content[:20]}...")
 
             # 拟人化滚动
             distance = random.randint(700, 1200)
@@ -146,7 +146,7 @@ class SearchScraper(BaseScraper):
                 raw_data={"metrics": metrics}
             )
         except Exception as e:
-            logger.debug(f"解析推文节点失败: {e}")
+            logger.debug(f"Failed to parse tweet node: {e}")
             return None
 
     def _get_metrics(self, tweet_locator):

@@ -20,18 +20,18 @@ app = typer.Typer(help="x-crawlfox: A multi-platform web scraping CLI tool")
 x_app = typer.Typer(help="X (Twitter) scraping commands")
 
 def handle_error(e: Exception):
-    """统一错误处理逻辑"""
+    """Unified error handling logic"""
     if isinstance(e, PlaywrightTimeoutError):
-        logger.error("连接超时！请检查您的网络环境（是否需要开启 VPN）或代理设置 (--proxy)。")
-        logger.debug(f"详细错误: {e}")
+        logger.error("Connection timeout! Please check your network environment (VPN?) or proxy settings (--proxy).")
+        logger.debug(f"Detailed error: {e}")
     elif isinstance(e, PlaywrightError):
-        logger.error(f"浏览器自动化错误: {e.message}")
+        logger.error(f"Browser automation error: {e.message}")
         if "executable" in e.message.lower():
             logger.info("提示: 请尝试运行 'playwright install' 安装所需的浏览器驱动。")
     elif isinstance(e, KeyboardInterrupt):
-        logger.warning("用户中止了操作。")
+        logger.warning("Operation aborted by user.")
     else:
-        logger.exception(f"发生未知错误: {e}")
+        logger.exception(f"An unknown error occurred: {e}")
 
 def save_items(items: List[CrawledItem], filename: str, output_dir: str = "output"):
     save_path_dir = Path(output_dir)
@@ -47,43 +47,43 @@ def save_items(items: List[CrawledItem], filename: str, output_dir: str = "outpu
         for item in items:
             f.write(item.model_dump_json() + "\n")
     
-    logger.info(f"保存成功！共 {len(items)} 条数据存至 {filepath}")
+    logger.info(f"Save successful! {len(items)} items saved to {filepath}")
 
 # X Platform Commands
 @x_app.command()
 def timeline(
     type: str = typer.Option("Following", help="爬取类型: 'For you' 或 'Following'"),
-    max_items: int = typer.Option(20, help="要爬取的最大推文数量"),
-    max_scrolls: int = typer.Option(5, help="向下滚动的次数上限"),
-    output: str = typer.Option("output", "--output", "-o", help="保存数据的目录"),
-    headless: bool = typer.Option(True, help="是否使用无头模式"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址 (例如 http://127.0.0.1:7890)")
+    max_items: int = typer.Option(20, help="Maximum number of tweets to scrape"),
+    max_scrolls: int = typer.Option(5, help="Maximum number of downward scrolls"),
+    output: str = typer.Option("output", "--output", "-o", help="Directory to save data"),
+    headless: bool = typer.Option(True, help="Whether to use headless mode"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address (e.g. http://127.0.0.1:7890)")
 ):
     """
-    爬取您的个人时间线推文。
+    Scrape your personal timeline tweets.
     """
     try:
         with BrowserManager(headless=headless, proxy=proxy) as context:
             page = context.new_page()
-            logger.info(f"正在准备爬取 {type} 时间线...")
+            logger.info(f"Preparing to scrape {type} timeline...")
             page.goto("https://x.com/home", timeout=40000)
             scraper = TimelineScraper(page, max_scrolls=max_scrolls)
             items = scraper.scrape(tab_name=type, max_items=max_items)
             if items:
                 save_items(items, f"timeline_{type.lower().replace(' ', '_')}", output_dir=output)
             else:
-                logger.warning("未能抓取到任何推文，请检查是否已登录或页面加载是否正常。")
+                logger.warning("Failed to scrape any tweets. Please check if you are logged in or if the page loaded normally.")
     except Exception as e:
         handle_error(e)
 
 @x_app.command()
 def news(
     ctx: typer.Context,
-    detail: bool = typer.Option(False, "--detail", help="是否点击进入并抓取新闻详情及相关帖子"),
-    max_items: int = typer.Option(5, help="最多处理的新闻条目数"),
-    output: str = typer.Option("output", "--output", "-o", help="保存数据的目录"),
-    headless: bool = typer.Option(True, "--headless/--no-headless", help="是否使用无头模式"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址")
+    detail: bool = typer.Option(False, "--detail", help="Whether to click in and scrape news details and related posts"),
+    max_items: int = typer.Option(5, help="Maximum number of news items to process"),
+    output: str = typer.Option("output", "--output", "-o", help="Directory to save data"),
+    headless: bool = typer.Option(True, "--headless/--no-headless", help="Whether to use headless mode"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
     爬取侧边栏的今日新闻 (Today's News)，支持深度爬取详情和帖子。
@@ -99,7 +99,7 @@ def news(
                 suffix = "detailed" if detail else "sidebar"
                 save_items(items, f"today_news_{suffix}", output_dir=output)
             else:
-                logger.warning("未能抓取到今日新闻。")
+                logger.warning("Failed to scrape today\'s news.")
     except Exception as e:
         handle_error(e)
 
@@ -107,11 +107,11 @@ def news(
 def user(
     ctx: typer.Context,
     username: str,
-    max_tweets: int = typer.Option(20, help="要爬取的最大推文数量"),
-    only_new: bool = typer.Option(False, "--only-new", help="是否只爬取新内容"),
-    output: str = typer.Option("output", "--output", "-o", help="保存数据的目录"),
-    headless: bool = typer.Option(True, help="是否使用无头模式"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址")
+    max_tweets: int = typer.Option(20, help="Maximum number of tweets to scrape"),
+    only_new: bool = typer.Option(False, "--only-new", help="Whether to only scrape new content"),
+    output: str = typer.Option("output", "--output", "-o", help="Directory to save data"),
+    headless: bool = typer.Option(True, help="Whether to use headless mode"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
     爬取指定用户主页的推文，支持增量爬取。
@@ -126,18 +126,18 @@ def user(
             if items:
                 save_items(items, f"profile_{username}", output_dir=output)
             else:
-                logger.warning(f"未能抓取到用户 @{username} 的新推文。")
+                logger.warning(f"Failed to scrape new tweets for user @{username}.")
     except Exception as e:
         handle_error(e)
 
 @x_app.command()
 def monitor(
     ctx: typer.Context,
-    config: Optional[str] = typer.Option(None, help="监控配置文件路径 (JSON flat list)；不指定则从 .x-crawlfox/crawl_config.json 的 x.monitor 读取"),
-    global_max: int = typer.Option(100, help="单次监控抓取的全球最大推文总数"),
-    output: str = typer.Option("output", "--output", "-o", help="保存数据的目录"),
-    headless: bool = typer.Option(True, help="是否使用无头模式"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址")
+    config: Optional[str] = typer.Option(None, help="Monitor config file path (JSON flat list); if unspecified, reads from .x-crawlfox/crawl_config.json\'s x.monitor"),
+    global_max: int = typer.Option(100, help="Global maximum total tweets to scrape per monitor run"),
+    output: str = typer.Option("output", "--output", "-o", help="Directory to save data"),
+    headless: bool = typer.Option(True, help="Whether to use headless mode"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
     监控多个账号的新推文。
@@ -150,29 +150,29 @@ def monitor(
         # 从统一的 crawl_config.json 中读取 x.monitor 段
         config_path = cfg.get_crawl_config_path()
         if not config_path.exists():
-            logger.error(f"配置文件未找到: {config_path}，请先运行 'x-crawlfox init' 或通过 --config 指定配置文件。")
+            logger.error(f"Config file not found: {config_path}，请先运行 'x-crawlfox init' 或通过 --config 指定配置文件。")
             return
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 full_config = json.load(f)
         except Exception as e:
-            logger.error(f"解析配置文件失败: {e}")
+            logger.error(f"Failed to parse config file: {e}")
             return
         users_config = full_config.get("x", full_config).get("monitor", [])
         if not users_config:
-            logger.error("crawl_config.json 中未找到 x.monitor 配置，请添加后重试。")
+            logger.error("x.monitor config not found in crawl_config.json. Please add it and try again.")
             return
     else:
         # 显式指定配置文件：读取 flat list 格式
         config_path = Path(config)
         if not config_path.exists():
-            logger.error(f"配置文件未找到: {config}")
+            logger.error(f"Config file not found: {config}")
             return
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 users_config = json.load(f)
         except Exception as e:
-            logger.error(f"解析配置文件失败: {e}")
+            logger.error(f"Failed to parse config file: {e}")
             return
 
     try:
@@ -183,26 +183,26 @@ def monitor(
             if items:
                 save_items(items, "monitor_results", output_dir=output)
             else:
-                logger.warning("监控运行结束，未发现新推文。")
+                logger.warning("Monitor run finished. No new tweets found.")
     except Exception as e:
         handle_error(e)
 
 @x_app.command()
 def search(
-    keyword: str = typer.Argument(..., help="搜索关键词"),
-    max_items: int = typer.Option(20, help="要爬取的最大推文数量"),
-    output: str = typer.Option("output", "--output", "-o", help="保存数据的目录"),
-    headless: bool = typer.Option(True, help="是否使用无头模式"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址")
+    keyword: str = typer.Argument(..., help="Search keyword"),
+    max_items: int = typer.Option(20, help="Maximum number of tweets to scrape"),
+    output: str = typer.Option("output", "--output", "-o", help="Directory to save data"),
+    headless: bool = typer.Option(True, help="Whether to use headless mode"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
-    基于关键字搜索并爬取 X 上的推文（模拟真实输入模式）。
+    Search and scrape tweets on X based on keywords (simulating real input mode).
     """
     try:
         with BrowserManager(headless=headless, proxy=proxy) as context:
             page = context.new_page()
             
-            logger.info(f"正在通过模拟交互搜索: {keyword}")
+            logger.info(f"Searching via simulated interaction: {keyword}")
             scraper = SearchScraper(page, max_items=max_items)
             items = scraper.scrape(keyword)
 
@@ -216,10 +216,10 @@ def search(
 @x_app.command()
 def all(
     ctx: typer.Context,
-    config: str = typer.Option(None, help="爬取配置文件路径，如果不指定则从 .x-crawlfox 目录下加载"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="保存数据的目录（优先级高于 global.output_dir）"),
-    headless: Optional[bool] = typer.Option(None, "--headless/--no-headless", help="是否使用无头模式（优先级高于 global.headless）"),
-    proxy: Optional[str] = typer.Option(None, help="代理服务器地址")
+    config: str = typer.Option(None, help="Crawl config file path. If unspecified, loads from .x-crawlfox directory"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Directory to save data（优先级高于 global.output_dir）"),
+    headless: Optional[bool] = typer.Option(None, "--headless/--no-headless", help="Whether to use headless mode（优先级高于 global.headless）"),
+    proxy: Optional[str] = typer.Option(None, help="Proxy server address")
 ):
     """
     [一键爬取] 根据配置文件执行全量爬取任务。
@@ -232,14 +232,14 @@ def all(
         config_path = Path(config)
 
     if not config_path.exists():
-        logger.error(f"配置文件未找到: {config_path}")
+        logger.error(f"Config file not found: {config_path}")
         return
 
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             full_config = json.load(f)
     except Exception as e:
-        logger.error(f"解析配置文件失败: {e}")
+        logger.error(f"Failed to parse config file: {e}")
         return
 
     # 读取 global 段，CLI 显式传值 > global 配置 > 代码默认值
@@ -258,7 +258,7 @@ def all(
             # 1. Timeline
             timeline_configs = x_config.get("timeline", [])
             if timeline_configs:
-                logger.info(">>> 开始爬取时间线...")
+                logger.info(">>> Starting timeline crawl...")
                 try:
                     if page.is_closed(): page = context.new_page()
                     page.goto("https://x.com/home")
@@ -266,18 +266,18 @@ def all(
                         t_type = tc.get("type", "Following")
                         m_scrolls = tc.get("max_scrolls", 5)
                         m_items = tc.get("max_items", 20)
-                        logger.info(f"正在处理 {t_type} 时间线 (max_items={m_items}, max_scrolls={m_scrolls})...")
+                        logger.info(f"Processing {t_type} timeline (max_items={m_items}, max_scrolls={m_scrolls})...")
                         scraper = TimelineScraper(page, max_scrolls=m_scrolls)
                         items = scraper.scrape(tab_name=t_type, max_items=m_items)
                         all_items.extend(items)
                         page.wait_for_timeout(random.randint(5000, 10000))
                 except Exception as e:
-                    logger.error(f"爬取时间线模块发生错误: {e}")
+                    logger.error(f"Error in timeline crawling module: {e}")
 
             # 2. News
             news_config = x_config.get("news", {})
             if news_config.get("enabled"):
-                logger.info(">>> 开始爬取今日新闻...")
+                logger.info(">>> Starting today\'s news crawl...")
                 try:
                     if page.is_closed(): page = context.new_page()
                     # Always reload home so the page scroll position is reset
@@ -290,48 +290,48 @@ def all(
                     all_items.extend(items)
                     page.wait_for_timeout(random.randint(5000, 10000))
                 except Exception as e:
-                    logger.error(f"爬取新闻模块发生错误: {e}")
+                    logger.error(f"Error in news crawling module: {e}")
 
             # 3. Monitor (Profile)
             monitor_configs = x_config.get("monitor", [])
             if monitor_configs:
-                logger.info(">>> 开始监控账号推文...")
+                logger.info(">>> Starting account tweet monitor...")
                 try:
                     if page.is_closed():
-                        logger.warning("页面已关闭，正在为监控模块开启新页面...")
+                        logger.warning("Page closed, opening new page for monitor module...")
                         page = context.new_page()
                     scraper = ProfileScraper(page)
                     items = scraper.monitor_users(monitor_configs)
                     all_items.extend(items)
                     page.wait_for_timeout(random.randint(5000, 10000))
                 except Exception as e:
-                    logger.error(f"账号监控模块发生错误: {e}")
+                    logger.error(f"Error in account monitor module: {e}")
 
             # 4. Search
             search_configs = x_config.get("search", [])
             if search_configs:
-                logger.info(">>> 开始执行关键词搜索...")
+                logger.info(">>> Starting keyword search...")
                 try:
                     for sc in search_configs:
                         if page.is_closed():
-                            logger.warning("页面已关闭，正在为搜索任务开启新页面...")
+                            logger.warning("Page closed, opening new page for search task...")
                             page = context.new_page()
                         
                         kw = sc.get("keyword")
                         m_items = sc.get("max_items", 20)
                         if kw:
-                            logger.info(f"搜索关键词: {kw} (max_items={m_items})...")
+                            logger.info(f"Search keyword: {kw} (max_items={m_items})...")
                             scraper = SearchScraper(page, max_items=m_items)
                             items = scraper.scrape(kw)
                             all_items.extend(items)
                             page.wait_for_timeout(random.randint(5000, 10000))
                 except Exception as e:
-                    logger.error(f"关键词搜索模块发生错误: {e}")
+                    logger.error(f"Error in keyword search module: {e}")
 
             if all_items:
                 save_items(all_items, "all_crawled_results", output_dir=effective_output)
             else:
-                logger.warning("全量爬取任务结束，未抓取到任何数据。")
+                logger.warning("Full crawl task finished, no data scraped.")
 
     except Exception as e:
         handle_error(e)
@@ -339,29 +339,29 @@ def all(
 @x_app.command()
 def login(
     ctx: typer.Context,
-    headless: bool = typer.Option(False, "--headless/--no-headless", help="是否使用无头模式")
+    headless: bool = typer.Option(False, "--headless/--no-headless", help="Whether to use headless mode")
 ):
     """
-    打开浏览器进行 X 手动登录，完成后保存登录状态至 .x-crawlfox/x_cookies.json。
+    Open browser for manual X login, and save login state to .x-crawlfox/x_cookies.json upon completion.
     """
     cfg: ConfigManager = ctx.obj["config"]
     try:
-        logger.info("正在启动浏览器以进行手动登录...")
+        logger.info("Starting browser for manual login...")
         with BrowserManager(headless=headless) as context:
             page = context.new_page()
-            logger.info("正在导航至 X 登录页面...")
+            logger.info("Navigating to X login page...")
             page.goto("https://x.com/i/flow/login", timeout=40000)
 
             logger.info("-" * 50)
-            logger.info("请在弹出的浏览器窗口中完成登录。")
-            logger.info("登录完成后，请回到此处按 Enter 键保存状态并退出...")
+            logger.info("Please complete login in the popup browser window.")
+            logger.info("After login is complete, return here and press Enter to save state and exit...")
             logger.info("-" * 50)
             input()
 
             bm = BrowserManager()
             bm.context = context
             bm.save_auth_state(path=str(cfg.auth_path))
-            logger.info(f"登录状态已成功保存至 {cfg.auth_path}")
+            logger.info(f"Login state successfully saved to {cfg.auth_path}")
     except Exception as e:
         handle_error(e)
 
@@ -371,28 +371,28 @@ app.add_typer(x_app, name="x")
 
 @app.callback()
 def main(ctx: typer.Context):
-    """x-crawlfox 全局初始化"""
+    """x-crawlfox global initialization"""
     # 将配置实例绑定到上下文对象中
     ctx.ensure_object(dict)
     ctx.obj["config"] = config_manager
 
 
 @app.command()
-def init(ctx: typer.Context, global_mode: bool = typer.Option(False, "--global", help="默认在当前目录下初始化")):
+def init(ctx: typer.Context, global_mode: bool = typer.Option(False, "--global", help="Initialize in current directory by default")):
     """
-    初始化 X-CrawlFox 环境，生成默认配置文件。
+    Initialize X-CrawlFox environment and generate default config file.
     """
     config: ConfigManager =  ctx.obj["config"]
     
     base_dir = config.init_config(global_mode=global_mode)
     
-    logger.info(f"[x-crawlfox]配置初始化成功！已保存在 {base_dir}")
+    logger.info(f"[x-crawlfox] Configuration initialized successfully! Saved in {base_dir}")
 
 def cli():
     try:
         app()
     except KeyboardInterrupt:
-        logger.warning("用户中止了操作。")
+        logger.warning("Operation aborted by user.")
         sys.exit(0)
 
 

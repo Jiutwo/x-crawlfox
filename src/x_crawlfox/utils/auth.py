@@ -61,20 +61,20 @@ def ensure_storage_state(file_path: Path) -> Path:
             data = json.load(f)
 
         if is_cookie_editor_format(data):
-            logger.info(f"检测到 {file_path.name} 为 Cookie-Editor 格式，正在自动转换...")
+            logger.info(f"Detected {file_path.name} in Cookie-Editor format, converting automatically...")
             converted_data = convert_to_playwright_format(data)
             
             # 自动备份并覆盖
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(converted_data, f, indent=4)
-            logger.success(f"转换成功！已更新 {file_path}")
+            logger.success(f"Conversion successful! Updated {file_path}")
         elif isinstance(data, dict) and "cookies" in data:
             # 已经是 Playwright 格式
             pass
         else:
-            logger.warning(f"文件 {file_path.name} 格式未知，可能导致浏览器加载失败。")
+            logger.warning(f"Unknown format for file {file_path.name}, which may cause browser loading failure.")
             
     except Exception as e:
-        logger.error(f"解析认证文件失败: {e}")
+        logger.error(f"Failed to parse auth file: {e}")
     
     return file_path
