@@ -1,6 +1,6 @@
 # X-CrawlFox 🦊
 
-[![License](https://img.shields.io/github/license/Jiutwo/x-crawlfox)](https://opensource.org/licenses/Apache-2.0) ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue) [![GitHub stars](https://img.shields.io/github/stars/Jiutwo/x-crawlfox)](https://github.com/Jiutwo/x-crawlfox/stargazers)
+[![License](https://img.shields.io/github/license/Jiutwo/x-crawlfox)](https://opensource.org/licenses/Apache-2.0) ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue) ![PyPI Version](https://img.shields.io/pypi/v/x-crawlfox) ![PyPI - Downloads](https://img.shields.io/pypi/dm/x-crawlfox) [![GitHub stars](https://img.shields.io/github/stars/Jiutwo/x-crawlfox)](https://github.com/Jiutwo/x-crawlfox/stargazers)
 
 免费、高匿的 X/Twitter 拟人化爬虫命令行工具。
 
