@@ -9,6 +9,7 @@ class ConcreteScraper(BaseScraper):
 def test_check_and_retry_error_visible():
     """测试当错误提示可见时，重试逻辑是否触发 reload。"""
     mock_page = MagicMock()
+    mock_page.is_closed.return_value = False
     scraper = ConcreteScraper(mock_page)
     
     # 模拟 url 属性，确保不包含 login
@@ -47,6 +48,7 @@ def test_check_and_retry_error_visible():
 def test_check_and_retry_error_not_needed():
     """测试没有错误时直接返回 True。"""
     mock_page = MagicMock()
+    mock_page.is_closed.return_value = False
     scraper = ConcreteScraper(mock_page)
     
     # 确保不包含 login

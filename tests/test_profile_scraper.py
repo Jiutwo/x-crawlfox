@@ -19,8 +19,9 @@ def test_scrape_user_only_new(mock_state_class):
     mock_state.get_last_tweet_id.return_value = "old_id"
     
     mock_page = MagicMock()
+    mock_page.is_closed.return_value = False
     scraper = ProfileScraper(mock_page)
-    
+
     # 模拟 _extract_tweet_data 依次返回新、旧推文
     new_item = mock_tweet("new_id")
     old_item = mock_tweet("old_id")
@@ -41,8 +42,9 @@ def test_scrape_user_only_new(mock_state_class):
 def test_scrape_user_max_tweets(mock_state_class):
     """测试 max_tweets 限制。"""
     mock_page = MagicMock()
+    mock_page.is_closed.return_value = False
     scraper = ProfileScraper(mock_page)
-    
+
     # 模拟产生 5 个推文，但 max_tweets 设为 2
     scraper._extract_tweet_data = MagicMock(side_effect=[
         mock_tweet("id1"), mock_tweet("id2"), mock_tweet("id3")
@@ -72,8 +74,7 @@ def test_monitor_users_flow(mock_state_class):
         {"username": "user2", "max_tweets": 5}
     ]
     
-    with patch("time.sleep"): # 避免测试中等待
-        results = scraper.monitor_users(config)
+    results = scraper.monitor_users(config)
     
     assert len(results) == 2
     assert scraper.scrape_user.call_count == 2
