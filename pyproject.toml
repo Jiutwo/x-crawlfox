@@ -1,6 +1,6 @@
 [project]
 name = "x-crawlfox"
-version = "0.1.0"
+version = "0.1.1"
 description = "Implementing X (Twitter) data crawling based on Camoufox, for personal use."
 readme = "README.md"
 requires-python = ">=3.10"
