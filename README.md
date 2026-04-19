@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/github/license/Jiutwo/x-crawlfox)](https://opensource.org/licenses/Apache-2.0) ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue) ![PyPI Version](https://img.shields.io/pypi/v/x-crawlfox) ![PyPI - Downloads](https://img.shields.io/pypi/dm/x-crawlfox) [![GitHub stars](https://img.shields.io/github/stars/Jiutwo/x-crawlfox)](https://github.com/Jiutwo/x-crawlfox/stargazers)
 
 
-A free, high-anonymity X (Twitter) human-like scraping CLI tool.
+A free, highly anonymous, human-like scraping CLI tool for X (Twitter) and search engines.
 
 🌐 **English** | [中文](./README-zh.md)
 
@@ -14,11 +14,10 @@ A free, high-anonymity X (Twitter) human-like scraping CLI tool.
 - **Human-like Interaction**: Integrates Camoufox fingerprint obfuscation to simulate real human scrolling, random delays, and typing interactions, significantly reducing the risk of detection.
 - **Timeline Scraping**: Supports crawling "Following" and "For you" feeds with configurable item limits.
 - **Deep News Scraping**: Automatically scrapes the "Today's News" sidebar, with support for clicking into details to extract Grok summaries and related popular posts.
-- **Keyword Search**: Simulates real keyboard input for search queries to bypass anti-bot detection.
 - **Incremental Account Monitoring**: Supports multi-account monitoring with automatic tracking of the last crawled tweet ID to only fetch new content.
 - **One-click Composite Tasks**: Launch composite tasks (Timeline, News, Monitoring, Search) via a unified JSON configuration file.
 - **Automatic State Management**: Automatically saves login sessions (Cookie) and crawling progress (Crawler State).
-
+- **Multi-Search Engine Support**: Supports 18 different search engines, including Google, Bing, Baidu, Brave, DuckDuckGo, and more.
 ---
 
 ## 📦 Quick Start
@@ -117,7 +116,55 @@ You can also specify a custom config file (flat list format):
 x-crawlfox x monitor --config my_accounts.json
 ```
 
-#### 6. One-click Composite Tasks
+#### 6. Search Engine Scraping
+
+X-CrawlFox supports scraping search results from **18 search engines** (8 CN + 10 Global) via the `se` subcommand. No login is required.
+
+**Single engine search**
+
+```bash
+# Fast mode: navigate directly to the search URL (default)
+x-crawlfox se search "LangGraph" --engine google --max-results 10
+
+# Simulate mode: open homepage and type like a human (better anti-detection)
+x-crawlfox se search "LangGraph" --engine google --mode simulate
+
+# Time filter: hour | day | week | month | year
+x-crawlfox se search "AI news" --engine bing --time-range day
+
+# Domain restriction
+x-crawlfox se search "python async" --engine google --site github.com
+
+# File type filter
+x-crawlfox se search "machine learning" --engine baidu --filetype pdf
+
+# Exact phrase match
+x-crawlfox se search "anything" --engine duckduckgo --exact-phrase "large language model"
+
+# Disable headless mode (useful when bot detection is triggered)
+x-crawlfox se search "隐私工具" --engine qwant --no-headless
+```
+
+**Multi-engine search** — query multiple engines in one run and merge results into a single `.jsonl` file:
+
+```bash
+x-crawlfox se multi "AI Agent" --engines google,bing,duckduckgo --max-results 10
+x-crawlfox se multi "量化投资" --engines baidu,sogou,jisilu,wechat
+x-crawlfox se multi "rust async" --engines google,bing --time-range month
+```
+
+**Available engines**
+
+| Region | Engines |
+|--------|---------|
+| CN     | `baidu` `bing-cn` `bing-int` `360` `sogou` `wechat` `toutiao` `jisilu` |
+| Global | `google` `google-hk` `bing` `duckduckgo` `yahoo` `startpage` `brave` `ecosia` `qwant` `wolframalpha` |
+
+Results are saved as `.jsonl` to the `output/` directory (e.g. `output/se_google_LangGraph_20260419_120000.jsonl`).
+
+---
+
+#### 7. One-click Composite Tasks
 
 Edit `.x-crawlfox/crawl_config.json`, then run:
 

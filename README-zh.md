@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/Jiutwo/x-crawlfox)](https://opensource.org/licenses/Apache-2.0) ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue) ![PyPI Version](https://img.shields.io/pypi/v/x-crawlfox) ![PyPI - Downloads](https://img.shields.io/pypi/dm/x-crawlfox) [![GitHub stars](https://img.shields.io/github/stars/Jiutwo/x-crawlfox)](https://github.com/Jiutwo/x-crawlfox/stargazers)
 
-免费、高匿的 X/Twitter 拟人化爬虫命令行工具。
+免费、高匿的 X/Twitter、搜索引擎 拟人化爬虫命令行工具。
 
 🌐 [English](./README-en.md) | **中文**
 
@@ -14,10 +14,10 @@
 - **拟人化交互**：集成 Camoufox 指纹混淆，模拟真人滚动、随机延迟、键入交互，大幅降低风控风险。
 - **时间线抓取**：支持爬取"正在关注 (Following)"和"为您推荐 (For you)"的内容，支持指定抓取数量。
 - **深度新闻爬取**：自动抓取"今日新闻 (Today's News)"侧边栏，支持点击进入详情页获取 Grok 摘要及相关热门帖子。
-- **关键词搜索**：模拟真实键入行为搜索推文，绕过反爬检测。
 - **增量账号监控**：支持多账号监控，自动追踪上次爬取位置，仅抓取新发布的推文。
 - **一键全量任务**：通过统一的 JSON 配置文件，一键启动包含时间线、新闻、账号监控、关键词搜索在内的复合爬取任务。
 - **自动状态管理**：自动保存登录会话 (Cookie) 和爬取进度 (Crawler State)。
+- **多搜索引擎支持**：支持多种搜索引擎，包括google、bing、baidu、brave、duckduckgo等18种。
 
 ---
 
@@ -117,7 +117,55 @@ x-crawlfox x monitor
 x-crawlfox x monitor --config my_accounts.json
 ```
 
-#### 6. 一键执行复合任务
+#### 6. 搜索引擎爬取
+
+X-CrawlFox 通过 `se` 子命令支持 **18 种搜索引擎**（8 个国内 + 10 个国际）的搜索结果爬取，无需登录。
+
+**单引擎搜索**
+
+```bash
+# Fast 模式：直接跳转到搜索结果 URL（默认）
+x-crawlfox se search "LangGraph" --engine google --max-results 10
+
+# Simulate 模式：打开主页后模拟人工打字（更强的反检测能力）
+x-crawlfox se search "LangGraph" --engine google --mode simulate
+
+# 时间过滤：hour | day | week | month | year
+x-crawlfox se search "AI 资讯" --engine bing --time-range day
+
+# 限定域名
+x-crawlfox se search "python async" --engine google --site github.com
+
+# 文件类型过滤
+x-crawlfox se search "机器学习" --engine baidu --filetype pdf
+
+# 精确短语匹配
+x-crawlfox se search "任意词" --engine duckduckgo --exact-phrase "大语言模型"
+
+# 关闭无头模式（遇到风控时建议使用）
+x-crawlfox se search "隐私工具" --engine qwant --no-headless
+```
+
+**多引擎搜索** — 一次查询多个引擎，结果合并输出到单个 `.jsonl` 文件：
+
+```bash
+x-crawlfox se multi "AI Agent" --engines google,bing,duckduckgo --max-results 10
+x-crawlfox se multi "量化投资" --engines baidu,sogou,jisilu,wechat
+x-crawlfox se multi "rust async" --engines google,bing --time-range month
+```
+
+**支持的搜索引擎**
+
+| 地区 | 引擎 |
+|------|------|
+| 国内 | `baidu` `bing-cn` `bing-int` `360` `sogou` `wechat` `toutiao` `jisilu` |
+| 国际 | `google` `google-hk` `bing` `duckduckgo` `yahoo` `startpage` `brave` `ecosia` `qwant` `wolframalpha` |
+
+结果以 `.jsonl` 格式保存到 `output/` 目录（如 `output/se_google_LangGraph_20260419_120000.jsonl`）。
+
+---
+
+#### 7. 一键执行复合任务
 
 编辑 `.x-crawlfox/crawl_config.json`，然后运行：
 
