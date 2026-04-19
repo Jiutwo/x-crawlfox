@@ -8,13 +8,45 @@ from ..models.search_schema import SearchMode, TimeRange, SearchFilter
 from ..scrapers.search.engines.baidu import BaiduSearchScraper
 from ..scrapers.search.engines.google import GoogleSearchScraper
 from ..scrapers.search.engines.bing import BingSearchScraper
+from ..scrapers.search.engines.bing_cn import BingCNSearchScraper
+from ..scrapers.search.engines.bing_int import BingINTSearchScraper
+from ..scrapers.search.engines.so360 import So360SearchScraper
+from ..scrapers.search.engines.sogou import SogouSearchScraper
+from ..scrapers.search.engines.wechat import WeChatSearchScraper
+from ..scrapers.search.engines.toutiao import ToutiaoSearchScraper
+from ..scrapers.search.engines.jisilu import JisiluSearchScraper
+from ..scrapers.search.engines.google_hk import GoogleHKSearchScraper
+from ..scrapers.search.engines.duckduckgo import DuckDuckGoSearchScraper
+from ..scrapers.search.engines.yahoo import YahooSearchScraper
+from ..scrapers.search.engines.startpage import StartpageSearchScraper
+from ..scrapers.search.engines.brave import BraveSearchScraper
+from ..scrapers.search.engines.ecosia import EcosiaSearchScraper
+from ..scrapers.search.engines.qwant import QwantSearchScraper
+from ..scrapers.search.engines.wolframalpha import WolframAlphaSearchScraper
 
-se_app = typer.Typer(help="Search engine scraping commands (Baidu / Google / Bing)")
+se_app = typer.Typer(help="Search engine scraping commands (17 engines: 8 CN + 9 Global)")
 
 _ENGINE_MAP = {
-    "baidu":  BaiduSearchScraper,
-    "google": GoogleSearchScraper,
-    "bing":   BingSearchScraper,
+    # --- Domestic (CN) ---
+    "baidu":      BaiduSearchScraper,
+    "bing-cn":    BingCNSearchScraper,
+    "bing-int":   BingINTSearchScraper,
+    "360":        So360SearchScraper,
+    "sogou":      SogouSearchScraper,
+    "wechat":     WeChatSearchScraper,
+    "toutiao":    ToutiaoSearchScraper,
+    "jisilu":     JisiluSearchScraper,
+    # --- Global ---
+    "google":     GoogleSearchScraper,
+    "google-hk":  GoogleHKSearchScraper,
+    "bing":       BingSearchScraper,
+    "duckduckgo": DuckDuckGoSearchScraper,
+    "yahoo":      YahooSearchScraper,
+    "startpage":  StartpageSearchScraper,  # private
+    "brave":      BraveSearchScraper,
+    "ecosia":     EcosiaSearchScraper,
+    "qwant":      QwantSearchScraper,
+    "wolframalpha": WolframAlphaSearchScraper,
 }
 
 
@@ -49,9 +81,14 @@ def search(
     """
     Scrape search results from a single engine.
 
+    Engines (CN): baidu | bing-cn | bing-int | 360 | sogou | wechat | toutiao | jisilu
+    Engines (Global): google | google-hk | bing | duckduckgo | yahoo | startpage | brave | ecosia | qwant | wolframalpha
+
     Examples:
       x-crawlfox se search "LangGraph" --engine baidu --mode fast --time-range week
       x-crawlfox se search "python async" --engine google --site github.com
+      x-crawlfox se search "隐私工具" --engine duckduckgo
+      x-crawlfox se search "100 USD to CNY" --engine wolframalpha
     """
     engine = engine.lower()
     if engine not in _ENGINE_MAP:
@@ -96,7 +133,8 @@ def multi(
 
     Examples:
       x-crawlfox se multi "AI Agent" --engines baidu,google,bing --mode fast
-      x-crawlfox se multi "rust async" --engines google,bing --time-range month
+      x-crawlfox se multi "rust async" --engines google,bing,duckduckgo --time-range month
+      x-crawlfox se multi "量化投资" --engines baidu,sogou,jisilu,wechat
     """
     engine_list = [e.strip().lower() for e in engines.split(",") if e.strip()]
     invalid = [e for e in engine_list if e not in _ENGINE_MAP]
