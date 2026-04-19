@@ -34,7 +34,8 @@ class BrowserManager:
             ensure_storage_state(self.auth_file)
             logger.info(f"Loading auth state from {self.auth_file}")
             storage_state = str(self.auth_file)
-        else:
+        elif self.auth_file:
+            # Explicitly provided but file is missing
             logger.warning(f"Auth file {self.auth_file} not found. You may need to login first.")
 
         self.context = self.browser.new_context(
